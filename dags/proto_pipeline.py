@@ -62,9 +62,7 @@ def get_files(num: int = 1) -> str:
             break
     print(file_timestamps)
 
-    cmd = (
-        f"bash /home/sash820h/batch_scripts/file_finder.sh {' '.join(file_timestamps)}"
-    )
+    cmd = f"bash /home/sash820h/softwares/std-img-pipeline/scripts/file_finder.sh {' '.join(file_timestamps)}"
     out_dict = execute_bash_file_collector(cmd, SSH_CONN_CPU)
     print(out_dict)
     return out_dict
@@ -82,7 +80,7 @@ def get_files(num: int = 1) -> str:
 )
 def run_correlation(file_path: str, num_files: int) -> str:
 
-    cmd = f"sbatch --array=0-{num_files - 1}%3 /home/sash820h/batch_scripts/correlator_batch_pipe.sh  {file_path}"
+    cmd = f"sbatch --array=0-{num_files - 1}%3 /home/sash820h/softwares/std-img-pipeline/scripts/correlator_batch_pipe.sh  {file_path}"
     job_id = submit_slurm_job(cmd, SSH_CONN_GPU)
 
     # check the status of submitted slurm jobs and returns when all the jobs are successfull.
@@ -102,7 +100,7 @@ def run_correlation(file_path: str, num_files: int) -> str:
 )
 def run_concatenation(file_path: str) -> str:
 
-    cmd = f"sbatch /home/sash820h/batch_scripts/concatenate.sh  {file_path}"
+    cmd = f"sbatch /home/sash820h/softwares/std-img-pipeline/scripts/concatenate.sh  {file_path}"
     # Need a logic to return the combined measurement set as well here
     job_id = submit_slurm_job(cmd, SSH_CONN_CPU)
 
@@ -127,7 +125,9 @@ def verify_output_ms(file_path: str) -> str:
         + os.path.splitext(os.path.basename(txt_file))[0].replace(":", "-")
         + ".ms"
     )
-    cmd = f"bash /home/sash820h/batch_scripts/ms_verify.sh {ms_file}"
+    cmd = (
+        f"bash /home/sash820h/softwares/std-img-pipeline/scripts/ms_verify.sh {ms_file}"
+    )
     result = execute_bash(cmd, SSH_CONN_CPU)
     print(result)
     if result.strip() == "Success":
@@ -152,7 +152,7 @@ def update_yaml(ms_file: str) -> str:
     out_name = os.path.splitext(os.path.basename(ms_file))[0]
     log_name = out_name.split("_")[-1]
     print(ms_file, out_name, log_name)
-    cmd = f"bash /home/sash820h/batch_scripts/update_yaml.sh {ms_file} {out_name} {log_name}"
+    cmd = f"bash /home/sash820h/softwares/std-img-pipeline/scripts/update_yaml.sh {ms_file} {out_name} {log_name}"
     yaml_file = execute_bash(cmd, SSH_CONN_CPU)
     return yaml_file
 
@@ -169,7 +169,7 @@ def update_yaml(ms_file: str) -> str:
 )
 def run_stimela(yaml_file: str) -> str:
 
-    cmd = f"bash /home/sash820h/batch_scripts/stimela_execute.sh {yaml_file}"
+    cmd = f"bash /home/sash820h/softwares/std-img-pipeline/scripts/stimela_execute.sh {yaml_file}"
     result_logs = execute_bash(cmd, SSH_CONN_CPU)
     wait_for_stimela_job(SSH_CONN_CPU, result_logs)
     return result_logs
