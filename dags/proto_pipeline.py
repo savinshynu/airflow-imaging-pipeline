@@ -80,7 +80,7 @@ def get_files(num: int = 1) -> str:
 )
 def run_correlation(file_path: str, num_files: int) -> str:
 
-    cmd = f"sbatch --array=0-{num_files - 1}%3 /home/sash820h/softwares/std-img-pipeline/scripts/correlator_batch_pipe.sh  {file_path}"
+    cmd = f"sbatch --array=0-{num_files - 1}%8 /home/sash820h/softwares/std-img-pipeline/scripts/correlator_batch_pipe.sh  {file_path}"
     job_id = submit_slurm_job(cmd, SSH_CONN_GPU)
 
     # check the status of submitted slurm jobs and returns when all the jobs are successfull.
@@ -164,7 +164,7 @@ def update_yaml(ms_file: str) -> str:
       ### Stimela Executor
       Execute the stimela pipeline on the HPC Cluster
       Input: yaml filepath
-      Output: Stimela logs
+      Output: Create clean images in the cluster, locally output Stimela logs
       """,
 )
 def run_stimela(yaml_file: str) -> str:
@@ -173,6 +173,22 @@ def run_stimela(yaml_file: str) -> str:
     result_logs = execute_bash(cmd, SSH_CONN_CPU)
     wait_for_stimela_job(SSH_CONN_CPU, result_logs)
     return result_logs
+
+
+@task(
+    retries=3,
+    retry_delay=timedelta(minutes=10),
+    doc_md="""
+      """,
+)
+def update_processed(file_info: list[dict]) -> bool:
+    """
+    Update the processed file locally once the whole pipeline ran successfully
+    """
+    with open(processed_file, "a") as fa:
+        for file_dict in file_info:
+            fa.write(f"{file_dict['file_path']}\n")
+    return True
 
 
 with DAG(
@@ -210,7 +226,7 @@ with DAG(
     """),
 ) as dag:
     # collect dada file list
-    result_dict = get_files(1)
+    result_dict = get_files(num=1)
 
     # correlate the data
     uvh5_filepaths = run_correlation.expand_kwargs(result_dict)
@@ -226,3 +242,18 @@ with DAG(
 
     # Run stimela with the new yaml file
     res_logs = run_stimela.expand(yaml_file=yaml_file_path)
+
+    # Add this timestamp to the processed files at the end.
+    # Not defined as a DAG task here.
+    res_up = update_processed(result_dict)
+
+    # define dependencies here
+    (
+        result_dict
+        >> uvh5_filepaths
+        >> ms_filepaths
+        >> comb_ms_path
+        >> yaml_file_path
+        >> res_logs
+        >> res_up
+    )
