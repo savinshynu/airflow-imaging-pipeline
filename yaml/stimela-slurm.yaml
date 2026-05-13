@@ -1,0 +1,79 @@
+_include:
+  - (cultcargo):
+    - casa/listobs.yml
+    - casa/flag.yml
+    - casa/plotms.yml
+    - wsclean.yml
+
+opts:
+  log:
+    dir: logs
+    nest: 2
+  backend: # Enabling the SLURM backend
+    slurm:
+      enable: true
+      #rebuild: true
+      srun_opts: # Setting the default compute resources
+        mem: 64G
+        cpus-per-task: 1
+
+MKtest:
+  name: MKAT-CASA
+  info: Simple CASA recipe
+
+  inputs: # The input CASA MS file
+    ms_test:
+      dtype: MS
+      default: /data/horse/ws/sash820h-test-corr/Stimela/test-demo/first.ms
+
+  steps:
+    list-data: # Listing observation
+      cab: casa.listobs
+      params:
+        ms: '{recipe.ms_test}'
+
+    save-obs-flags: # Saving Observatory flags
+      cab: casa.flagman
+      params:
+        ms: '{recipe.ms_test}'
+        mode: save
+        versionname: OBSERVATORY_FLAGS
+
+    flag-summ: # Print Flag summary
+      cab: casa.flagsummary
+      params:
+        ms: '{recipe.ms_test}'
+
+
+    clean-image: # Cleaning the image
+      cab: wsclean
+      backend:
+        slurm:
+          enable: true
+          #rebuild: true
+          srun_opts:
+            mem: 256G
+            cpus-per-task: 16
+  
+      params:
+        ms: '{recipe.ms_test}'
+        prefix: test_02-stimela
+        nchan: 1
+        size: 2048
+        scale: 3.74asec
+        pol: I
+        gridder: wgridder
+        weight: briggs 0
+        niter: 1000
+
+    
+    
+
+
+
+
+
+
+
+
+

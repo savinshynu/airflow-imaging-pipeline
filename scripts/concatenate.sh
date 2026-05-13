@@ -5,8 +5,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=32G
-#SBATCH --time=00:20:00
+#SBATCH --mem=256G
+#SBATCH --time=01:00:00
 
 # Optional: Load HPC modules
 module load release/24.10

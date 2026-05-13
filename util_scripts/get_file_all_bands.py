@@ -37,7 +37,7 @@ def find_all_files(inp_filenames: list) -> str:
         num_files = 0
         with open(out_filename, 'w') as fh:
             
-            for dir in dirs[:3]:
+            for dir in dirs:
                 search_dir = data_dir + dir
                 dada_files = fnmatch.filter(os.listdir(search_dir), source_dt + '*' + tstamp +'.dada')
                 if dada_files and len(dada_files) == 1:
