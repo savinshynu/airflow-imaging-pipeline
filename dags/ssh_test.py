@@ -4,7 +4,7 @@ from airflow.providers.ssh.operators.ssh import SSHOperator
 
 from airflow import DAG
 
-SSH_CONN_ID = "capella_gpu"  # must match your Airflow connection
+SSH_CONN_ID = "barnard_cpu"  # must match your Airflow connection
 
 
 with DAG(
