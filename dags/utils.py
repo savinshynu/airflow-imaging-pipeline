@@ -81,21 +81,24 @@ def wait_for_slurm_job(job_id: int, ssh_conn_id: str, poll_interval: int = 120) 
         cmd = f"sacct -j {job_id} --format=JobID,State --parsable2 --noheader |grep -v batch | grep -v extern"
         _, stdout, stderr = client.exec_command(cmd)
 
-        status = stdout.read().decode().strip()
         error = stderr.read().decode()
-
         if error:
             raise Exception(f"Slurm error: {error}")
 
-        if not status:
+        output = stdout.read().decode().strip()
+        out_parts = output.split("|")
+        if len(out_parts) < 2:
             print("No job info yet, retrying...")
             time.sleep(poll_interval)
             continue
 
-        if "COMPLETED" in status:
+        state = out_parts[1]
+        print(f"State: {state}")
+
+        if state == "COMPLETED":
             return
-        elif any(x in status for x in ["FAILED", "CANCELLED", "TIMEOUT", "OOM"]):
-            raise Exception(f"Job {job_id} failed: {status}")
+        elif any(x == state for x in ["FAILED", "CANCELLED", "TIMEOUT", "OOM"]):
+            raise Exception(f"Job {job_id} failed: {state}")
 
         time.sleep(poll_interval)
 
