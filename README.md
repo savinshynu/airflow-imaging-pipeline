@@ -1,6 +1,6 @@
 # End-to-end Data Processing Pipeline for COMACT Meerkat Data
 
-An airflow based end-to-end imaging pipeline for the COMPACT data. Under the hood pipeline uses the [standard DZA based correlator](https://gitlab.dzastro.de/dza/data-science/standard-correlator) and the [Stimela](https://github.com/caracal-pipeline/stimela.git). Airflow is used for scheduling and orchestration. The compute engine of the pipeline utilize the HPC resources through the SLURM scheduler.
+An Apache airflow based end-to-end imaging pipeline for the COMPACT data. Under the hood pipeline uses the [standard DZA based correlator](https://gitlab.dzastro.de/dza/data-science/standard-correlator) and the [Stimela](https://github.com/caracal-pipeline/stimela.git). Airflow is used for scheduling and orchestration. The compute engine of the pipeline utilize the HPC resources through the SLURM scheduler.
 
 A rough sketch and installation procedures of the pipeline are defined in the pipeline_documentation.pdf available within this repo. The schema of the pipeline looks as follows:
 ![design](ariflow_schema.png)
